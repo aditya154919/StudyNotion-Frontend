@@ -87,7 +87,7 @@ const Navbar = () => {
                           </Link>
                         ))
                       ) : (
-                        <p>No Categories</p>
+                        <p>Loading...</p>
                       )}
                     </div>
                   </div>
