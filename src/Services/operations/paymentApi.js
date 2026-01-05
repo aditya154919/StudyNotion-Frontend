@@ -28,7 +28,7 @@ export const buyCourse = async(token,courses,userDetails,navigate,dispatch)=>{
     try {
         //load script
         // console.log("thik hu",token,"huh");
-        // console.log("course",courses)
+        console.log("course",courses)
         const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js")
         if(!res){
             // console.log("helkc")

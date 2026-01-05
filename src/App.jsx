@@ -29,6 +29,7 @@ import ForgotPass from './pages/ForgotPass'
 import VerifyOtp from './pages/VerifyOtp'
 import ChangePass from './pages/ChangePass'
 import Setting from './components/cores/Dashboard/Settings/Setting'
+import Cart from './components/cores/Cart/Cart'
 
 
 
@@ -75,7 +76,7 @@ const App = () => {
             user?.accountType === ACCOUNT_TYPE.STUDENT &&(
               <>
               <Route path='/dashboard/enrolled-courses' element={<EnrolledCourses/>}/>
-              
+              <Route path='/dashboard/cart' element={<Cart/>}/>
               </>
             )
           }

@@ -3,6 +3,7 @@ import { AUTHAPI, tag } from "../api";
 import { toast } from "react-hot-toast";
 import { apiConnector } from "../apiconnector";
 import { setUser } from "../../slices/Pofileslice";
+import { resetCart } from "../../slices/Cartslice";
 
 const { SIGNUP_API, VERIFY_API, LOGIN_API,LOGOUT_API,FORGOTPASS_API} = AUTHAPI;
 
@@ -98,6 +99,7 @@ export function logout(navigate){
   return (dispatch)=>{
     dispatch(setToken(null));
     dispatch(setUser(null));
+    dispatch(resetCart())
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     toast.success("Logout success")
