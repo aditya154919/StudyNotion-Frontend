@@ -1,9 +1,11 @@
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { FiEdit } from "react-icons/fi";
+import { useNavigate } from 'react-router';
 
 const Myprofile = () => {
-  const {user} = useSelector((state)=> state.profile)
+  const {user} = useSelector((state)=> state.profile);
+  const navigate = useNavigate()
   return (
     <div className='p-2'>
       <h1 className='text-3xl mb-10 font-serif text-gray-200'>My Profile</h1>
@@ -15,7 +17,9 @@ const Myprofile = () => {
             <p className='text-sm text-gray-400'>{user.email}</p>
            </div>
         </div>
-        <div className='flex  felx-row font-semibold cursor-pointer items-center justify-center w-28 h-12 gap-1 bg-yellow-300 rounded-md border border-[#2C333F]'>
+        <div className='flex  felx-row font-semibold cursor-pointer items-center justify-center w-28 h-12 gap-1 bg-yellow-300 rounded-md border border-[#2C333F]'
+        onClick={()=>navigate("/dashboard/settings")}
+        >
           Edit
           <FiEdit/>
         </div>
@@ -26,7 +30,9 @@ const Myprofile = () => {
         <h2 className='text-xl text-gray-200 font-semibold'>About</h2>
        <p className='text-gray-500 mt-2'>{user.about}</p>
        </div>
-       <div className='flex  felx-row font-semibold cursor-pointer items-center justify-center w-28 h-12 gap-1 bg-yellow-300 rounded-md border border-[#2C333F]'>
+       <div className='flex  felx-row font-semibold cursor-pointer items-center justify-center w-28 h-12 gap-1 bg-yellow-300 rounded-md border border-[#2C333F]'
+        onClick={()=>navigate("/dashboard/settings")}
+       >
           Edit
           <FiEdit/>
         </div>
@@ -35,7 +41,9 @@ const Myprofile = () => {
       <div className='  flex flex-col rounded-md border px-12 py-7 bg-[#161D29] border-[#2C333F] mt-10'>
         <div className='flex flex-row w-full justify-between'>
            <h1 className='text-lg text-gray-100 font-medium'>Personal Details</h1>
-          <div className='flex  felx-row font-semibold cursor-pointer items-center justify-center w-28 h-12 gap-1 bg-yellow-300 rounded-md border border-[#2C333F]'>
+          <div className='flex  felx-row font-semibold cursor-pointer items-center justify-center w-28 h-12 gap-1 bg-yellow-300 rounded-md border border-[#2C333F]'
+           onClick={()=>navigate("/dashboard/settings")}
+          >
           Edit
           <FiEdit/>
         </div>
