@@ -76,7 +76,11 @@ export const UpdateProfilePic = async(token,formData,dispatch)=>{
         throw new Error(response.data.message)
       }
       toast.success("Display Picture Updated Successfully")
-      dispatch(setUser(response.data.data))
+      dispatch(setUser(response.data.picture));
+      localStorage.setItem(
+      "user",
+      JSON.stringify(response.data.picture)
+    );
   } catch (error) {
     console.log("UPDATE_DISPLAY_PICTURE_API API ERROR............", error)
     toast.error("Could Not Update Display Picture")

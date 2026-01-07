@@ -28,7 +28,7 @@ export function signUp(signupData, navigate) {
       toast.success("Signup successful! Please verify your email");
       navigate("/verifyemail");
     } catch (error) {
-      toast.error("Signup failed");
+      toast.error(error.response.data.message);
       console.log("SIGNUP API ERROR", error);
     }
 
@@ -60,6 +60,42 @@ export function verifyemail(token,navigate){
 }
 
 
+// export function login(formData, navigate) {
+//   return async (dispatch) => {
+//     const toastId = toast.loading("Logging...");
+//     dispatch(setLoading(true));
+
+//     try {
+//       const result = await apiConnector({
+//         method: "POST",
+//         url: LOGIN_API,
+//         body: formData,
+//       });
+
+//       toast.success("Login success", { id: toastId });
+
+//       dispatch(setToken(result.data.refreshtoken));
+
+//       const userImage = result.data?.user?.image
+//         ? result.data.user.image
+//         : `https://api.dicebear.com/5.x/initials/svg?seed=${result.data.user.firstName} ${result.data.user.lastName}`;
+
+//       dispatch(setUser({ ...result.data.user, image: userImage }));
+
+//       setTimeout(() => navigate("/dashboard/myprofile"), 800);
+//     } catch (error) {
+//       const errorMessage =
+//         error?.response?.data?.message || "Something went wrong";
+
+//       toast.error(errorMessage, { id: toastId });
+//       dispatch(setMessage(errorMessage));
+//     } finally {
+//       dispatch(setLoading(false));
+//     }
+//   };
+// }
+
+
 export function login(formData, navigate) {
   return async (dispatch) => {
     const toastId = toast.loading("Logging...");
@@ -74,13 +110,21 @@ export function login(formData, navigate) {
 
       toast.success("Login success", { id: toastId });
 
+      // ✅ SAVE TOKEN (CRITICAL)
+      localStorage.setItem(
+        "token",
+        JSON.stringify(result.data.refreshtoken)
+      );
       dispatch(setToken(result.data.refreshtoken));
 
       const userImage = result.data?.user?.image
         ? result.data.user.image
         : `https://api.dicebear.com/5.x/initials/svg?seed=${result.data.user.firstName} ${result.data.user.lastName}`;
 
-      dispatch(setUser({ ...result.data.user, image: userImage }));
+      // ✅ SAVE USER
+      const userData = { ...result.data.user, image: userImage };
+      dispatch(setUser(userData));
+      localStorage.setItem("user", JSON.stringify(userData));
 
       setTimeout(() => navigate("/dashboard/myprofile"), 800);
     } catch (error) {
@@ -94,6 +138,7 @@ export function login(formData, navigate) {
     }
   };
 }
+
 
 export function logout(navigate){
   return (dispatch)=>{
