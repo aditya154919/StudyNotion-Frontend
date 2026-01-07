@@ -1,5 +1,5 @@
 
-const BASE_URL = "http://localhost:5000/api/v1"
+const BASE_URL = "https://studynotion-backend-1-dar5.onrender.com/api/v1"
 
 
 export const AUTHAPI = {
