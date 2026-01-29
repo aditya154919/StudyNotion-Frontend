@@ -100,7 +100,7 @@ const Home = () => {
     heading={
       <div className="md:text-4xl text-3xl font-semibold">
         Unlock your{" "}
-        <span className="bg-gradient-to-b from-[#1FA2FF] via-[#12D8FA] to-[#A6FFCB] text-transparent bg-clip-text font-bold">
+        <span className="bg-linear-to-b from-[#1FA2FF] via-[#12D8FA] to-[#A6FFCB] text-transparent bg-clip-text font-bold">
           Coding potential
         </span>{" "}
         with our online courses.
