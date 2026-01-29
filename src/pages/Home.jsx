@@ -33,7 +33,7 @@ const Home = () => {
             Coading skills
           </span>
         </div>
-        <div className="mt-3 w-[90%] text-center text-xl font-bold text-[#838894]">
+        <div className="mt-3 w-[90%] text-center text-xl md:line-clamp-2 line-clamp-4 font-bold text-[#838894]">
           With our online coding courses, you can learn at your own pace, from
           anywhere in the world, and get access to a wealth of resources,
           including hands-on projects, quizzes, and personalized feedback from
@@ -63,11 +63,11 @@ const Home = () => {
 
         <div>
           {/* code section 1 */}
-          <div>
+          {/* <div className="w-full overflow-x-hidden ">
             <CodeBlocks
               position={"lg:flex-row"}
               heading={
-                <div className="text-4xl font-semibold">
+                <div className="md:text-4xl  text-3xl md:mr-0 mr-10 font-semibold">
                   Unlock your{" "}
                   <span className="bg-linear-to-b from-[#1FA2FF] via-[#12D8FA] to-[#A6FFCB] text-transparent bg-clip-text font-bold">
                     Coading potential
@@ -92,7 +92,28 @@ const Home = () => {
               codecolor={"text-[#FFE83D]"}
               codeblockbggradient={<div className="codeblock1 absolute"></div>}
             />
-          </div>
+          </div> */}
+
+          <div className="w-full overflow-x-hidden">
+  <CodeBlocks
+    position={"lg:flex-row"} // Can be changed to lg:flex-row-reverse to flip layout
+    heading={
+      <div className="md:text-4xl text-3xl font-semibold">
+        Unlock your{" "}
+        <span className="bg-gradient-to-b from-[#1FA2FF] via-[#12D8FA] to-[#A6FFCB] text-transparent bg-clip-text font-bold">
+          Coding potential
+        </span>{" "}
+        with our online courses.
+      </div>
+    }
+    subheading="Our courses are designed and taught by industry experts who have years of experience in coding."
+    ctabtn1={{ btnText: "Try it yourself", linkto: "/signup", active: true }}
+    ctabtn2={{ btnText: "Learn more", linkto: "/login", active: false }}
+    codeblock={`<!DOCTYPE html>\n<html>\n<head>\n<title>Example</title>\n</head>\n<body>\n<h1><a href="/">Header</a></h1>\n<nav>\n<a href="/one">One</a>\n</nav>\n</body>`}
+    codecolor={"text-[#FFE83D]"}
+    codeblockbggradient={<div className="codeblock1 absolute"></div>}
+  />
+</div>
           {/* codeblock 2 */}
           <div>
             <CodeBlocks

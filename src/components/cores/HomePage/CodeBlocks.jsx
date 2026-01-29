@@ -14,13 +14,13 @@ const CodeBlocks = ({
   codeblock,
 }) => {
   return (
-    <div className={`flex ${position} my-20 justify-between gap-12`}>
+    <div className={`flex md:flex-row flex-col ${position} my-20 md:w-full w-[80%] md:p-0  md:justify-between  gap-12`}>
       
       {/* Section 1 */}
-      <div className="flex flex-col w-full lg:w-[50%] gap-7 px-4">
+      <div className="flex flex-col    lg:w-[50%] gap-7 px-4">
         {heading}
 
-        <div className="text-[#999DAA] font-semibold w-[85%] -mt-3">
+        <div className="text-[#999DAA] md:text-[17px] text-[13px]  font-semibold md:w-[85%]  -mt-3">
           {subheading}
         </div>
 
@@ -68,3 +68,7 @@ const CodeBlocks = ({
 };
 
 export default CodeBlocks;
+
+
+
+

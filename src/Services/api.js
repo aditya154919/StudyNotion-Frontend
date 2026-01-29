@@ -1,6 +1,6 @@
 
 const BASE_URL = "https://studynotion-backend-1-dar5.onrender.com/api/v1"
-
+// https://studynotion-backend-1-dar5.onrender.com/
 
 export const AUTHAPI = {
     SIGNUP_API:BASE_URL+"/signup",
