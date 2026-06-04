@@ -41,7 +41,7 @@ export const createCourse = async (formData, token, dispatch) => {
     if (!response.data.success) {
       throw new Error("Course not created");
     }
-    // console.log("Course created", response);
+    console.log("Course created", response.data.data);
     dispatch(setStep(2));
     dispatch(setCourse(response.data.data));
     result = response.data.data;
@@ -92,7 +92,7 @@ export const createSection = async (formData, token) => {
       throw new Error("SECTION NOT CREATED");
     }
     result = res.data.data;
-    console.log("SEction created success");
+    console.log("SEction created success",result);
   } catch (error) {
     console.log("Error", error.message);
   }

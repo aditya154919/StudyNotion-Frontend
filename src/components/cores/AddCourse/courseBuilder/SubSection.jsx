@@ -1,9 +1,12 @@
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { RxCross2 } from "react-icons/rx";
 import { useDispatch, useSelector } from "react-redux";
 import Upload from "../CourseInformation/Upload";
 import { useForm } from "react-hook-form";
-import { createSubSection, updateSubSection } from "../../../../Services/operations/Courseapi";
+import {
+  createSubSection,
+  updateSubSection,
+} from "../../../../Services/operations/Courseapi";
 import { setCourse } from "../../../../slices/Courseslice";
 
 const SubSection = ({
@@ -26,68 +29,72 @@ const SubSection = ({
   const { token } = useSelector((state) => state.auth);
   const { course } = useSelector((state) => state.course);
 
-   useEffect(() => {
-  if (view || edit) {
-    setValue("lectureTitle", modelData.title);
-    setValue("lectureDescription", modelData.description);
-    setValue("LectureVedio", modelData.vedioUrl);
-  }
-}, [view, edit, modelData, setValue]);
+  useEffect(() => {
+    if (view || edit) {
+      setValue("lectureTitle", modelData.title);
+      setValue("lectureDescription", modelData.description);
+      setValue("LectureVedio", modelData.vedioUrl);
+      setValue("Notes",modelData.Notes)
+    }
+  }, [view, edit, modelData, setValue]);
 
- const isFormUpdated = ()=>{
-  const currentValues = getValues();
-  if (
+  const isFormUpdated = () => {
+    const currentValues = getValues();
+    if (
       currentValues.lectureTitle !== modelData.title ||
       currentValues.lectureDescription !== modelData.description ||
-      currentValues.LectureVedio !== modelData.vedioUrl
+      currentValues.LectureVedio !== modelData.vedioUrl ||
+      currentValues.Notes !== modelData.Notes
     ) {
-      return true
+      return true;
     }
-    return false
- }
+    return false;
+  };
 
- const handleEditSubsection = async()=>{
+  const handleEditSubsection = async () => {
     const currentValue = getValues();
     const formData = new FormData();
-       
-    formData.append("sectionId", modelData.sectionId)
-    formData.append("subSectionId", modelData._id)  
-    
+
+    formData.append("sectionId", modelData.sectionId);
+    formData.append("subSectionId", modelData._id);
+
     if (currentValue.lectureTitle !== modelData.title) {
-      formData.append("title", currentValue.lectureTitle)
+      formData.append("title", currentValue.lectureTitle);
     }
     if (currentValue.lectureDesc !== modelData.description) {
-      formData.append("description", currentValue.lectureDescription)
+      formData.append("description", currentValue.lectureDescription);
     }
     if (currentValue.lectureVideo !== modelData.vedioUrl) {
-      formData.append("video", currentValue.LectureVideo)
+      formData.append("video", currentValue.LectureVideo);
     }
-    setLoading(true)
-    const result = await updateSubSection(formData, token)
+    if (currentValue.Notes && currentValue.Notes !== "existing-file") {
+  formData.append("notes", currentValue.Notes);
+}
+    setLoading(true);
+    const result = await updateSubSection(formData, token);
     if (result) {
-      console.log("result", result)
+      console.log("result", result);
       // update the structure of course
       const updatedCourseContent = course.courseContent.map((section) =>
-        section._id === modelData.sectionId ? result : section
-      )
-      const updatedCourse = { ...course, courseContent: updatedCourseContent }
-      dispatch(setCourse(updatedCourse))
+        section._id === modelData.sectionId ? result : section,
+      );
+      const updatedCourse = { ...course, courseContent: updatedCourseContent };
+      dispatch(setCourse(updatedCourse));
     }
-    setModelData(null)
-    setLoading(false)
- }
+    setModelData(null);
+    setLoading(false);
+  };
 
   const onsubmit = async (data) => {
-    if(view) return;
-    if(edit){
+    if (view) return;
+    if (edit) {
       if (!isFormUpdated()) {
-        toast.error("No changes made to the form")
+        toast.error("No changes made to the form");
       } else {
-        handleEditSubsection()
+        handleEditSubsection();
       }
-      return
+      return;
     }
-
 
     setLoading(true);
     const formData = new FormData();
@@ -95,20 +102,14 @@ const SubSection = ({
     formData.append("title", data.lectureTitle);
     formData.append("description", data.lectureDescription);
     formData.append("vedio", data.LectureVedio);
+    formData.append("notes",data.Notes)
 
     const result = await createSubSection(formData, token);
 
-    // if(result){
-    //   const updatedCourseContent = course.courseContent.map((section)=>
-    //   section._id === modelData ? result:section
-    //   )
-    //   const updatedCourse = {...course, courseContent:updatedCourseContent || []}
-    //   dispatch(setCourse(updatedCourse))
-    // }
     if (result?.data) {
       const updatedSection = {
         ...result.data,
-        subSection: result.data.subSection || [], 
+        subSection: result.data.subSection || [],
       };
 
       const updatedCourseContent = course.courseContent.map((section) =>
@@ -116,15 +117,15 @@ const SubSection = ({
           ? updatedSection
           : {
               ...section,
-              subSection: section.subSection || [], // ✅ normalize others
-            }
+              subSection: section.subSection || [],
+            },
       );
 
       dispatch(
         setCourse({
           ...course,
           courseContent: updatedCourseContent,
-        })
+        }),
       );
     }
 
@@ -150,11 +151,11 @@ const SubSection = ({
         >
           <Upload
             name="LectureVedio"
-            label="Lecture Vedio"
+            label="Lecture Video"
+            type="video"
             register={register}
             setValue={setValue}
             errors={errors}
-            video={true}
             viewData={view ? modelData.vedioUrl : null}
             editData={edit ? modelData.vedioUrl : null}
           />
@@ -194,6 +195,18 @@ const SubSection = ({
               </span>
             )}
           </label>
+
+          <Upload
+            name="Notes"
+            label="Notes"
+            register={register}
+            setValue={setValue}
+            errors={errors}
+            type="document"
+            viewData={view ? modelData.Notes : null}
+            editData={edit ? modelData.Notes : null}
+          />
+
           {!view && (
             <div className=" flex justify-end">
               <button className="py-2 text-black font-medium cursor-pointer bg-yellow-400 rounded-md px-4 ">

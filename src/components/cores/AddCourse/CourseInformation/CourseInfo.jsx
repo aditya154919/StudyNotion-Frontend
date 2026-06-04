@@ -197,6 +197,7 @@ const CourseInfo = () => {
       <Upload
         name="courseImage"
         label="Course Thumbnail"
+        type="image"
         register={register}
         setValue={setValue}
         errors={errors}

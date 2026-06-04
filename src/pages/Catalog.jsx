@@ -22,7 +22,7 @@ const Catalog = () => {
         url: tag.TAG_API,
       });
       const result = res.data.data;
-      // console.log("Result", result);
+      console.log("Result", result);
       const category_id = result.filter(
         (ct) => ct.name.split(" ").join("-").toLowerCase() === catlogName
       )[0]._id;
@@ -31,7 +31,7 @@ const Catalog = () => {
     };
     getAllTag();
   }, [catlogName]);
-  // console.log("Catagory id of", catlogName, "=", categoryId);
+  console.log("Catagory id of", catlogName, "=", categoryId);
 
   useEffect(() => {
     const getCategoryDetails = async () => {

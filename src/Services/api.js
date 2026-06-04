@@ -1,5 +1,5 @@
 
-const BASE_URL = "https://studynotion-backend-1-dar5.onrender.com/api/v1"
+const BASE_URL = "http://localhost:4000/api/v1"
 // https://studynotion-backend-1-dar5.onrender.com/
 
 export const AUTHAPI = {
@@ -53,4 +53,14 @@ export const PROFILE = {
     CONTACTUS_API:BASE_URL+"/contactUs",
     UPDATEPROFILEPIC_API:BASE_URL+"/updateProfilePic",
     EDITPROFILE_API:BASE_URL+"/updateProfile"
+}
+
+export const STREAM = {
+    CREATESTREAM_API:BASE_URL+"/stream/createRoom",
+    GETSTREAMDATA_API:BASE_URL+"/stream/getStreamData",
+    GETTOKEN_API:BASE_URL+"/stream/token",
+    GETENROLLEDSTUDENTROOM:BASE_URL+"/stream/studentRoom",
+    SENDNOTIFICATION_API:BASE_URL+"/stream/notification",
+    ENDSTREAM_API:BASE_URL+"/stream/endStream",
+    UPLOADRECORDING_API:BASE_URL+"/stream/uploadrecording"
 }
