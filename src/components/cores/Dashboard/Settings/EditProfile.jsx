@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form'
 import { editProfile } from '../../../../Services/operations/Profileapi'
 
 
-const genders = ["Male", "Female",  "Other"]
+const genders = ["Male", "Female", "Other"]
 
 const EditProfile = () => {
     const { user } = useSelector((state) => state.profile)
@@ -21,9 +21,11 @@ const EditProfile = () => {
   } = useForm()
 
   const submitProfileForm = async (data) => {
-    // console.log("Form Data - ", data)
     try {
-      dispatch(editProfile(token, data,dispatch))
+      const updated = await editProfile(token, data, dispatch)
+      if (updated) {
+        navigate("/dashboard/myprofile")
+      }
     } catch (error) {
       console.log("ERROR MESSAGE - ", error.message)
     }
@@ -32,7 +34,7 @@ const EditProfile = () => {
    <>
      <form onSubmit={handleSubmit(submitProfileForm)}>
         {/* Profile Information */}
-        <div className="my-10 flex flex-col gap-y-6 rounded-md border border-[#2C333F] bg-[#161D29] p-8 px-12">
+        <div className="my-8 flex flex-col gap-y-6 rounded-2xl border border-white/5 bg-[#111827] p-5 sm:p-8">
           <h2 className="text-lg font-semibold text-gray-200">
             Profile Information
           </h2>
@@ -46,13 +48,13 @@ const EditProfile = () => {
                 name="firstName"
                 id="firstName"
                 placeholder="Enter first name"
-                className="rounded-lg bg-[#2C333F] p-3 text-[16px] leading-6 text-[#F1F2FF] shadow-[0_1px_0_0] shadow-white/50 placeholder:text-[#6E727F] focus:outline-none"
-                {...register("firstName", { required: true })}
+                className="rounded-lg border border-[#3A4352] bg-[#0B1220] p-3 text-[16px] leading-6 text-[#F1F2FF] placeholder:text-[#6E727F] focus:border-violet-400 focus:outline-none"
+                {...register("firstName", { required: "Please enter your first name." })}
                 defaultValue={user?.firstName}
               />
               {errors.firstName && (
                 <span className="-mt-1 text-[12px] text-[#E7C009]">
-                  Please enter your first name.
+                  {errors.firstName.message}
                 </span>
               )}
             </div>
@@ -64,14 +66,14 @@ const EditProfile = () => {
                 type="text"
                 name="lastName"
                 id="lastName"
-                placeholder="Enter first name"
-                className="rounded-lg bg-[#2C333F] p-3 text-[16px] leading-6 text-[#F1F2FF] shadow-[0_1px_0_0] shadow-white/50 placeholder:text-[#6E727F] focus:outline-none"
-                {...register("lastName", { required: true })}
+                placeholder="Enter last name"
+                className="rounded-lg border border-[#3A4352] bg-[#0B1220] p-3 text-[16px] leading-6 text-[#F1F2FF] placeholder:text-[#6E727F] focus:border-violet-400 focus:outline-none"
+                {...register("lastName", { required: "Please enter your last name." })}
                 defaultValue={user?.lastName}
               />
               {errors.lastName && (
                 <span className="-mt-1 text-[12px] text-[#E7C009]">
-                  Please enter your last name.
+                  {errors.lastName.message}
                 </span>
               )}
             </div>
@@ -86,18 +88,14 @@ const EditProfile = () => {
                 type="date"
                 name="dateOfBirth"
                 id="dateOfBirth"
-                className="rounded-lg bg-[#2C333F] p-3 text-[16px] leading-6 text-[#F1F2FF] shadow-[0_1px_0_0] shadow-white/50 placeholder:text-[#6E727F] focus:outline-none"
+                className="rounded-lg border border-[#3A4352] bg-[#0B1220] p-3 text-[16px] leading-6 text-[#F1F2FF] placeholder:text-[#6E727F] focus:border-violet-400 focus:outline-none"
                 {...register("dateOfBirth", {
-                  required: {
-                    value: true,
-                    message: "Please enter your Date of Birth.",
-                  },
                   max: {
                     value: new Date().toISOString().split("T")[0],
                     message: "Date of Birth cannot be in the future.",
                   },
                 })}
-                defaultValue={user?.additionalDetails?.dateOfBirth}
+                defaultValue={user?.dateOfBirth || ""}
               />
               {errors.dateOfBirth && (
                 <span className="-mt-1 text-[12px] text-[#E7C009]">
@@ -110,13 +108,13 @@ const EditProfile = () => {
                 Gender
               </label>
               <select
-                type="text"
                 name="gender"
                 id="gender"
-                className="rounded-lg bg-[#2C333F] p-3 text-[16px] leading-6 text-[#F1F2FF] shadow-[0_1px_0_0] shadow-white/50 placeholder:text-[#6E727F] focus:outline-none"
-                {...register("gender", { required: true })}
-                defaultValue={user?.additionalDetails?.gender}
+                className="rounded-lg border border-[#3A4352] bg-[#0B1220] p-3 text-[16px] leading-6 text-[#F1F2FF] focus:border-violet-400 focus:outline-none"
+                {...register("gender")}
+                defaultValue={user?.gender || ""}
               >
+                <option value="">Prefer not to say</option>
                 {genders.map((ele, i) => {
                   return (
                     <option key={i} value={ele}>
@@ -125,11 +123,6 @@ const EditProfile = () => {
                   )
                 })}
               </select>
-              {errors.gender && (
-                <span className="-mt-1 text-[12px] text-[#E7C009]">
-                  Please enter your Date of Birth.
-                </span>
-              )}
             </div>
           </div>
 
@@ -143,16 +136,17 @@ const EditProfile = () => {
                 name="contactNumber"
                 id="contactNumber"
                 placeholder="Enter Contact Number"
-                className="rounded-lg bg-[#2C333F] p-3 text-[16px] leading-6 text-[#F1F2FF] shadow-[0_1px_0_0] shadow-white/50 placeholder:text-[#6E727F] focus:outline-none"
+                className="rounded-lg border border-[#3A4352] bg-[#0B1220] p-3 text-[16px] leading-6 text-[#F1F2FF] placeholder:text-[#6E727F] focus:border-violet-400 focus:outline-none"
                 {...register("contactNumber", {
-                  required: {
-                    value: true,
-                    message: "Please enter your Contact Number.",
+                  validate: (value) => {
+                    if (!value) return true
+                    return (
+                      (value.length >= 10 && value.length <= 12) ||
+                      "Enter a valid contact number."
+                    )
                   },
-                  maxLength: { value: 12, message: "Invalid Contact Number" },
-                  minLength: { value: 10, message: "Invalid Contact Number" },
                 })}
-                defaultValue={user?.additionalDetails?.contactNumber}
+                defaultValue={user?.contactNumber || ""}
               />
               {errors.contactNumber && (
                 <span className="-mt-1 text-[12px] text-[#E7C009]">
@@ -162,30 +156,27 @@ const EditProfile = () => {
             </div>
             <div className="flex flex-col gap-2 lg:w-[48%]">
               <label htmlFor="about" className="text-[14px] text-[#F1F2FF]">
-                About
+                About you
               </label>
-              <input
-                type="text"
+              <textarea
                 name="about"
                 id="about"
-                placeholder="Enter Bio Details"
-                className="rounded-lg bg-[#2C333F] p-3 text-[16px] leading-6 text-[#F1F2FF] shadow-[0_1px_0_0] shadow-white/50 placeholder:text-[#6E727F] focus:outline-none"
-                {...register("about", { required: true })}
-                defaultValue={user?.additionalDetails?.about}
+                rows={3}
+                maxLength={500}
+                placeholder="Share a little about yourself"
+                className="resize-y rounded-lg border border-[#3A4352] bg-[#0B1220] p-3 text-[16px] leading-6 text-[#F1F2FF] placeholder:text-[#6E727F] focus:border-violet-400 focus:outline-none"
+                {...register("about")}
+                defaultValue={user?.about || ""}
               />
-              {errors.about && (
-                <span className="-mt-1 text-[12px] text-[#E7C009]">
-                  Please enter your About.
-                </span>
-              )}
             </div>
           </div>
         </div>
 
         <div className="flex justify-end gap-2">
           <button
+            type="button"
             onClick={() => {
-              navigate("/dashboard/my-profile")
+              navigate("/dashboard/myprofile")
             }}
             className="cursor-pointer rounded-md bg-richblack-700 py-2 px-5 font-semibold text-richblack-50"
           >

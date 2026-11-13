@@ -10,17 +10,17 @@ const Dashboard = () => {
 
     if(profileLoading || authLoading){
         return(
-            <div className='grid min-h-[calc(100vh-3.5rem)] place-items-center'>
+            <div className='grid min-h-[calc(100vh_-_3.5rem)] place-items-center'>
               <div className='spinner'></div>
             </div>
         )
     }
   return (
     <>
-    <div className='relative flex min-h-[calc(100vh-3.5rem)]'>
+    <div className='relative flex min-h-[calc(100vh_-_3.5rem)] min-w-0 flex-col md:flex-row'>
         <Sidebar/>
-        <div className='h-[calc(100vh-3.5rem)] flex-1 overflow-auto'>
-           <div className='mx-auto w-11/12 max-w-250 py-10'>
+        <div className='min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto'>
+           <div className='mx-auto w-full max-w-250 px-4 py-5 pb-24 sm:px-6 sm:py-8 sm:pb-24 lg:w-11/12 lg:py-10 lg:pb-10'>
              <Outlet/>
            </div>
         </div>

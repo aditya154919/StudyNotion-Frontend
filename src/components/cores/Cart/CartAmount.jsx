@@ -16,7 +16,7 @@ const CartAmount = () => {
     buyCourse(token, courses, user, navigate, dispatch)
   }
   return (
-    <div className='min-w-67 rounded-md border border-[#2C333F] bg-[#161D29] p-6'>
+    <div className='w-full min-w-0 rounded-md border border-[#2C333F] bg-[#161D29] p-5 sm:p-6 lg:w-67 lg:shrink-0'>
       <p className="mb-1 text-md font-medium text-[#838894]">Total:</p>
       <p className="mb-6 text-3xl font-medium text-yellow-400">₹ {total}</p>
       <IconBtn

@@ -1,75 +1,77 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useNavigate, useParams } from "react-router";
-import { updateCompletedLectures } from "../../../slices/ViewCourseSlice";
+import { useNavigate, useParams } from "react-router";
 import IconBtn from "../../../Common/IconBtn";
 import { courseProgress } from "../../../Services/operations/Courseapi";
 import { FaArrowLeft } from "react-icons/fa6";
-
 
 const VideoDetails = () => {
   const { courseId, sectionId, subSectionId } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const { token } = useSelector((state) => state.auth);
   const { courseSectionData, completedLectures } = useSelector(
-    (state) => state.viewCourse
+    (state) => state.viewCourse,
   );
 
- 
-  const [videoData, setVideoData] = useState([]);
+  const [videoData, setVideoData] = useState(null);
   const [videoEnd, setVideoEnd] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const vedioref = useRef(null);
 
-
   useEffect(() => {
-    if (!courseSectionData?.length) return;
-
-    if (!courseId && !sectionId && !subSectionId) {
+    if (!courseId || !sectionId || !subSectionId) {
       navigate("/dashboard/enrolled-courses");
       return;
     }
 
+    if (!courseSectionData?.length) return;
+
     const section = courseSectionData.find((sec) => sec._id === sectionId);
 
-    const subSection = section?.subSection.find(
-      (sub) => sub._id === subSectionId
+    const subSection = section?.subSection?.find(
+      (sub) => sub._id === subSectionId,
     );
 
     setVideoData(subSection || null);
     setVideoEnd(false);
-  }, [courseSectionData, location.pathname]);
+  }, [courseId, sectionId, subSectionId, courseSectionData, navigate]);
 
-  
-  const currentSectionIndex = courseSectionData.findIndex(
-    (sec) => sec._id === sectionId
+  const currentSectionIndex = (courseSectionData || []).findIndex(
+    (sec) => sec._id === sectionId,
   );
 
-  const currentSubSectionIndex = courseSectionData[
-    currentSectionIndex
-  ]?.subSection.findIndex((sub) => sub._id === subSectionId);
+  const currentSection = courseSectionData?.[currentSectionIndex];
 
-  
+  const currentSubSectionIndex =
+    currentSection?.subSection?.findIndex((sub) => sub._id === subSectionId) ??
+    -1;
+
   // FIRST / LAST VIDEO CHECK
   const isFirstVideo = () => {
-    return currentSectionIndex === 0 && currentSubSectionIndex === 0
-  };
+  return (
+    currentSectionIndex === 0 &&
+    currentSubSectionIndex === 0
+  );
+};
 
-  const isLastVideo = () => {
-    const lastSectionIndex = courseSectionData.length - 1;
-    const lastSubSectionIndex =
-      courseSectionData[currentSectionIndex].subSection.length - 1;
+const isLastVideo = () => {
+  if (!currentSection || currentSubSectionIndex === -1) {
+    return false;
+  }
 
-    return (
-      currentSectionIndex === lastSectionIndex &&
-      currentSubSectionIndex === lastSubSectionIndex
-    );
-  };
+  const lastSectionIndex = courseSectionData.length - 1;
+
+  const lastSubSectionIndex =
+    currentSection.subSection.length - 1;
+
+  return (
+    currentSectionIndex === lastSectionIndex &&
+    currentSubSectionIndex === lastSubSectionIndex
+  );
+};
 
   // NAVIGATION
   const goToNextVideo = () => {
@@ -81,14 +83,14 @@ const VideoDetails = () => {
         currentSection.subSection[currentSubSectionIndex + 1]._id;
 
       navigate(
-        `/viewCourse/${courseId}/section/${sectionId}/subSection/${nextSubId}`
+        `/viewCourse/${courseId}/section/${sectionId}/subSection/${nextSubId}`,
       );
     }
     // next section
     else {
       const nextSection = courseSectionData[currentSectionIndex + 1];
       navigate(
-        `/viewCourse/${courseId}/section/${nextSection._id}/subSection/${nextSection.subSection[0]._id}`
+        `/viewCourse/${courseId}/section/${nextSection._id}/subSection/${nextSection.subSection[0]._id}`,
       );
     }
   };
@@ -102,7 +104,7 @@ const VideoDetails = () => {
         currentSection.subSection[currentSubSectionIndex - 1]._id;
 
       navigate(
-        `/viewCourse/${courseId}/section/${sectionId}/subSection/${prevSubId}`
+        `/viewCourse/${courseId}/section/${sectionId}/subSection/${prevSubId}`,
       );
     }
     // previous section
@@ -111,7 +113,7 @@ const VideoDetails = () => {
       const lastSubIndex = prevSection.subSection.length - 1;
 
       navigate(
-        `/viewCourse/${courseId}/section/${prevSection._id}/subSection/${prevSection.subSection[lastSubIndex]._id}`
+        `/viewCourse/${courseId}/section/${prevSection._id}/subSection/${prevSection.subSection[lastSubIndex]._id}`,
       );
     }
   };
@@ -121,26 +123,19 @@ const VideoDetails = () => {
   const handleRewatch = () => {
     if (!vedioref.current) return;
 
-    vedioref.current.currentTime = 0; 
-    vedioref.current.play(); 
-    setVideoEnd(false); 
+    vedioref.current.currentTime = 0;
+    vedioref.current.play();
+    setVideoEnd(false);
   };
 
-
-  // ----------------------------------------
-  // MARK LECTURE COMPLETE
-  // ----------------------------------------
   const handleLectureCompletion = async () => {
     try {
       setLoading(true);
-      const res = await courseProgress(
-        {courseId,subSectionId },
-        token,dispatch
+      await courseProgress(
+        { courseId, subSectionId },
+        token,
+        dispatch,
       );
-
-      if (res) {
-      dispatch(updateCompletedLectures(subSectionId));
-      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -148,15 +143,18 @@ const VideoDetails = () => {
     }
   };
 
-  // ----------------------------------------
-  // UI
-  // ----------------------------------------
+
   if (!videoData) {
-    return <div className="text-white font-semibold text-3xl flex items-center justify-center h-screen"><FaArrowLeft className="items-center text-center mr-3"/>Select Vedio.</div>;
-  }
+  return (
+    <div className="flex h-screen items-center justify-center text-3xl font-semibold text-white">
+      <FaArrowLeft className="mr-3" />
+      Select Video.
+    </div>
+  );
+}
 
   return (
-    <div className="flex flex-col gap-5 text-white">
+    <div className="relative flex flex-col gap-5 text-white">
       {/* VIDEO */}
       <video
         ref={vedioref}
@@ -173,10 +171,10 @@ const VideoDetails = () => {
             backgroundImage:
               "linear-gradient(to top, rgb(0, 0, 0), rgba(0,0,0,0.7), rgba(0,0,0,0.5), rgba(0,0,0,0.1)",
           }}
-          className="full flex flex-col items-center justify-center gap-2 absolute inset-0 z-100  h-full place-content-center font-inter"
+          className="absolute inset-0 z-10 flex h-full flex-col items-center justify-center gap-2 rounded-md place-content-center font-inter"
         >
           {/* MARK COMPLETE */}
-          {!completedLectures.includes(subSectionId) && (
+          {!(completedLectures || []).includes(subSectionId) && (
             <IconBtn
               disabled={loading}
               onclick={handleLectureCompletion}

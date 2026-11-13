@@ -14,17 +14,17 @@ const CodeBlocks = ({
   codeblock,
 }) => {
   return (
-    <div className={`flex md:flex-row flex-col ${position} my-20 md:w-full w-[80%] md:p-0  md:justify-between  gap-12`}>
+    <div className={`mx-auto flex w-full flex-col gap-8 py-8 md:my-20 md:w-full md:flex-row md:justify-between md:gap-12 md:py-0 ${position}`}>
       
       {/* Section 1 */}
-      <div className="flex flex-col    lg:w-[50%] gap-7 px-4">
+      <div className="flex min-w-0 flex-col gap-5 px-4 sm:gap-7 lg:w-[50%]">
         {heading}
 
-        <div className="text-[#999DAA] md:text-[17px] text-[13px]  font-semibold md:w-[85%]  -mt-3">
+        <div className="text-[#999DAA] md:text-[17px] text-[13px] hidden md:flex font-semibold md:w-[85%]  -mt-3">
           {subheading}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <CTAButton active={ctabtn1.active} linkto={ctabtn1.linkto}>
             <div className="flex items-center gap-2">
               {ctabtn1.btnText}
@@ -39,17 +39,17 @@ const CodeBlocks = ({
       </div>
 
       {/* Section 2 */}
-      <div className="relative code-border flex w-full lg:w-125 rounded-lg  sm:text-sm leading-4.5">
+      <div className="relative flex w-full min-w-0 rounded-lg leading-4.5 code-border sm:text-sm lg:w-125">
         {codeblockbggradient}
         {/* Line Numbers */}
-        <div className="w-[10%] text-[#6E727F] font-mono text-sm leading-6 p-4">
+        <div className="w-10 shrink-0 p-3 font-mono text-xs leading-6 text-[#6E727F] sm:w-[10%] sm:p-4 sm:text-sm">
           {Array.from({ length: 11 }, (_, i) => (
             <p key={i}>{i + 1}</p>
           ))}
         </div>
 
         {/* Code */}
-        <div className={`w-[90%] font-mono text-sm leading-6 p-4 ${codecolor} pr-1`}>
+        <div className={`min-w-0 flex-1 overflow-hidden p-3 pr-1 font-mono text-xs leading-6 sm:p-4 sm:text-sm ${codecolor}`}>
           <TypeAnimation
             sequence={[codeblock,1000,""]}
             repeat={Infinity}
@@ -68,7 +68,6 @@ const CodeBlocks = ({
 };
 
 export default CodeBlocks;
-
 
 
 

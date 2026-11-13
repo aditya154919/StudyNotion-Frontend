@@ -111,9 +111,12 @@ export const editProfile = async(token,data,dispatch)=>{
         setUser({ ...response.data.data, image: userImage })
       )
       toast.success("Profile Updated Successfully")
+      return true
   } catch (error) {
     console.log("Error",error);
-    toast.error(error.response.data.message)
+    toast.error(error.response?.data?.message || "Could not update profile")
+    return false
+  } finally {
+    toast.dismiss(toastId)
   }
-  toast.dismiss(toastId)
 }

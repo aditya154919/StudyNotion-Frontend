@@ -1,166 +1,168 @@
 import { apiConnector } from "../apiconnector";
-import {STREAM} from "../api"
-import  { toast } from "react-hot-toast";
+import { STREAM } from "../api";
+import { toast } from "react-hot-toast";
 
+const errorMessage = (error, fallback) =>
+  error.response?.data?.message || error.message || fallback;
 
-const {
-  CREATESTREAM_API,
-  GETSTREAMDATA_API,
-  GETTOKEN_API,
-  GETENROLLEDSTUDENTROOM,
-  SENDNOTIFICATION_API,
-  ENDSTREAM_API,
-  UPLOADRECORDING_API
-} = STREAM
 export const createStreamRoom = async (payload, token) => {
-  let response = null;
-  const toastId = toast.loading("Loading...");
+  const toastId = toast.loading("Creating live class...");
   try {
-    const result = await apiConnector({
+    const response = await apiConnector({
       method: "POST",
-      url: CREATESTREAM_API,
+      url: STREAM.CREATESTREAM_API,
       body: payload,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
-    if (!result.data.success) {
-      throw new Error("streamRoom not created");
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Could not create live class");
     }
-    response = result.data;
-    toast.success("Room created");
-    console.log("Room created success", result.data);
+    toast.success("Live class scheduled");
+    return response.data;
   } catch (error) {
-    console.log("ERROR jh", error.message);
+    toast.error(errorMessage(error, "Could not create live class"));
+    throw error;
+  } finally {
+    toast.dismiss(toastId);
   }
-  toast.dismiss(toastId);
-  return response;
 };
 
-export const getStreamData = async(streamId,token) =>{
-  let response = null;
-  
+export const getStreamData = async (streamId, token) => {
   try {
-    const res = await apiConnector({
-      method:"POST",
-      url:GETSTREAMDATA_API,
-      body:{streamId:streamId},
-      headers:{
-        Authorization: `Bearer ${token}`
-      }
+    const response = await apiConnector({
+      method: "POST",
+      url: STREAM.GETSTREAMDATA_API,
+      body: { streamId },
+      headers: { Authorization: `Bearer ${token}` },
     });
-    if(!res.data.success){
-      throw new Error("Data not fetched")
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Could not load live class");
     }
-    console.log("data",res.data)
-    response = res.data;
-    
+    return response.data;
   } catch (error) {
-    console.log("Error",error.message)
+    if ([403, 410].includes(error.response?.status)) {
+      return { accessRevoked: true };
+    }
+    throw error;
   }
-  return response
-}
+};
 
-export const getToken = async(roomId,name)=>{
-  let response = null;
+export const getStreamStatus = async (streamId, token) => {
   try {
-    const res = await apiConnector({
-      method:"POST",
-      url:GETTOKEN_API,
-      body:{roomId:roomId,name:name},
-
-    })
-    if(!res.data.success){
-      throw new Error("Data not fetched")
+    const response = await apiConnector({
+      method: "POST",
+      url: STREAM.GETSTREAMSTATUS_API,
+      body: { streamId },
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!response.data.success) {
+      throw new Error(
+        response.data.message || "Could not refresh live-class status",
+      );
     }
-    response = res.data.token
+    return response.data;
   } catch (error) {
-    console.log("Error...",error.message)
-  }
-  return response
-}
-
-export const getLiveRoom = async(token)=>{
-  let response = null;
-  try {
-    const res = await apiConnector({
-    method:"POST",
-    url:GETENROLLEDSTUDENTROOM,
-    headers:{
-      Authorization: `Bearer ${token}`
+    if ([403, 410].includes(error.response?.status)) {
+      return { accessRevoked: true };
     }
-  })
-
-  if (!res.data.success) {
-      throw new Error("streamRoom not found",res.data.message);
-      console.log("Error hai",res.data.message)
-    }
-    response = res.data.data;
-    console.log("Room found success", res.data.data);
-  } catch (error) {
-    console.log("Error...",error)
+    throw error;
   }
-  return response;
-}
+};
 
-export const sentNotification = async(roomId,token,courseId)=>{
-  let response = null;
-  try {
-    const res = await apiConnector({
-      method:"POST",
-      url:SENDNOTIFICATION_API,
-      body:{roomId:roomId,courseId:courseId},
-      headers:{
-        Authorization: `Bearer ${token}`
-      }
-    })
-
-    if(!res.data.success){
-      throw new Error(res.data.message)
-    }
-    response = res.data.data
-    console.log("Res",res.data.data)
-  } catch (error) {
-    console.log("Error...",error)
-  }
-  return response
-}
-
-export const endStream = async(roomId,token)=>{
-  const toastId = toast.loading("Loading...")
-  try {
-    const res = await apiConnector({
-      method:"POST",
-      url:ENDSTREAM_API,
-      body:{roomId:roomId},
-      headers:{
-        Authorization:`Bearer ${token}`
-      }
-    })
-
-    if(!res.data.success){
-      throw new Error(res.data.message)
-    }
-  } catch (error) {
-    console.log("Error...",error)
-  }
-  toast.dismiss();
-}
-
-export const uploadRecording = async (
-  FormData,token
-) => {
- 
- const res =  await apiConnector({
+export const getToken = async (roomId, token) => {
+  const response = await apiConnector({
     method: "POST",
-    url: UPLOADRECORDING_API,
-    body: FormData,
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    url: STREAM.GETTOKEN_API,
+    body: { roomId },
+    headers: { Authorization: `Bearer ${token}` },
   });
-
-  if(!res.data.success){
-    throw new Error("error",res.data.message)
+  if (!response.data.success || !response.data.token) {
+    throw new Error(response.data.message || "Could not connect to live class");
   }
+  return response.data.token;
+};
+
+export const getLiveRoom = async (token) => {
+  const response = await apiConnector({
+    method: "POST",
+    url: STREAM.GETENROLLEDSTUDENTROOM,
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Could not load live classes");
+  }
+  return response.data.data || [];
+};
+
+export const startStream = async (streamId, token) => {
+  const response = await apiConnector({
+    method: "POST",
+    url: STREAM.STARTSTREAM_API,
+    body: { streamId },
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Could not start live class");
+  }
+  return response.data;
+};
+
+export const joinStreamAttendance = async (streamId, token) => {
+  const response = await apiConnector({
+    method: "POST",
+    url: STREAM.ATTENDANCEJOIN_API,
+    body: { streamId },
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Could not record attendance");
+  }
+  return response.data;
+};
+
+export const leaveStreamAttendance = async (streamId, token) => {
+  const response = await apiConnector({
+    method: "POST",
+    url: STREAM.ATTENDANCELEAVE_API,
+    body: { streamId },
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Could not update attendance");
+  }
+  return response.data;
+};
+
+export const leaveStream = async (streamId, token, recordingFile) => {
+  const body = new FormData();
+  body.append("streamId", streamId);
+  if (recordingFile) body.append("recording", recordingFile);
+
+  const response = await apiConnector({
+    method: "POST",
+    url: STREAM.LEAVESTREAM_API,
+    body,
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Could not leave live class");
+  }
+  return response.data;
+};
+
+export const endStream = async (streamId, token, recordingFile) => {
+  const body = new FormData();
+  body.append("streamId", streamId);
+  if (recordingFile) body.append("recording", recordingFile);
+
+  const response = await apiConnector({
+    method: "POST",
+    url: STREAM.ENDSTREAM_API,
+    body,
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Could not end live class");
+  }
+  return response.data;
 };

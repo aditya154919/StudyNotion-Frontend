@@ -12,7 +12,7 @@ const Sidebarlinks = ({ link, iconName }) => {
       to={link.path}
       onClick={() => dispatch(resetAll())}
       className={({ isActive }) =>
-        `relative px-8 py-2 text-sm font-medium transition-all duration-200 ${
+        `relative shrink-0 whitespace-nowrap px-4 py-3 text-sm font-medium transition-all duration-200 md:px-8 md:py-2 ${
           isActive
             ? "bg-yellow-800 text-yellow-200"
             : "bg-opacity-0 text-[#999DAA]"
@@ -22,7 +22,7 @@ const Sidebarlinks = ({ link, iconName }) => {
       {({ isActive }) => (
         <>
           <span
-            className={`absolute left-0 top-0 h-full w-[0.15rem] bg-[#FFD60A] ${
+            className={`absolute left-0 top-0 h-0.5 w-full bg-[#FFD60A] md:h-full md:w-[0.15rem] ${
               isActive ? "opacity-100" : "opacity-0"
             }`}
           ></span>

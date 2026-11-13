@@ -1,8 +1,7 @@
 import { toast } from "react-hot-toast";
 import { apiConnector } from "../apiconnector";
-import { setCourse, seteditCourse, setStep } from "../../slices/Courseslice";
+import { setCourse, setStep } from "../../slices/Courseslice";
 import { COURSEAPI, SECTIONAPI, tag } from "../api";
-import { setLoading } from "../../slices/Authslice";
 import { updateCompletedLectures } from "../../slices/ViewCourseSlice";
 
 const {
@@ -10,7 +9,10 @@ const {
   GETINSTRUCTORCOURSES_API,
   UPDATECOURSE_API,
   DELETECOURSE_API,
+  CANCELENROLLMENT_API,
+  RESTOREENROLLMENT_API,
   GETFULLCOURSEDETAILS_API,
+  GETINSTRUCTORCOURSEFOREDIT_API,
   ENROLLEDCOURSEDETAILS_API,
   RATING_API,
   COURSEPROGRESS_API
@@ -20,6 +22,8 @@ const {
   CREATESUBSECTION_API,
   UPDATESUBSECTION_API,
   UPDATESECTION_API,
+  UPDATESECTIONMATERIALS_API,
+  COMPLETEDSECTIONMATERIALS_API,
   DELETESECTION_API,
   DELETESUBSECTION_API,
 } = SECTIONAPI;
@@ -46,7 +50,10 @@ export const createCourse = async (formData, token, dispatch) => {
     dispatch(setCourse(response.data.data));
     result = response.data.data;
   } catch (error) {
-    console.log("ERROR", error.message);
+    console.error("COURSE CREATE API ERROR:", error);
+    toast.error(
+      error.response?.data?.message || error.message || "Could not create course",
+    );
   }
   toast.dismiss(toastId);
   return result;
@@ -70,7 +77,10 @@ export const editCourseDetails = async (formData, token) => {
     result = res.data.data;
     toast.success("Course Updated success");
   } catch (error) {
-    console.log("Error", error.message);
+    console.error("COURSE UPDATE API ERROR:", error);
+    toast.error(
+      error.response?.data?.message || error.message || "Could not update course",
+    );
   }
   toast.dismiss(toastId);
   return result;
@@ -94,7 +104,10 @@ export const createSection = async (formData, token) => {
     result = res.data.data;
     console.log("SEction created success",result);
   } catch (error) {
-    console.log("Error", error.message);
+    console.error("SECTION UPDATE API ERROR:", error);
+    toast.error(
+      error.response?.data?.message || error.message || "Could not update section",
+    );
   }
   toast.dismiss(toastId);
   return result;
@@ -151,8 +164,6 @@ export const fetchInstructorCourses = async (token) => {
 };
 
 export const getTagCourses = async (categoryId) => {
-  // console.log("Hello", categoryId);
-  let result = [];
   const toastId = toast.loading("Loading...");
   try {
     const response = await apiConnector({
@@ -163,16 +174,21 @@ export const getTagCourses = async (categoryId) => {
       },
     });
     if (!response.data.success) {
-      throw new Error("TAG COURSES NOT FETCHED");
+      throw new Error(response.data.message || "Courses could not be loaded.");
     }
-    result = response.data;
+    return response.data;
   } catch (error) {
-    console.log("Error", error.message);
-    // toast.error(error.message)
-    // result = error.response.message;
+    console.error("TAG COURSES API ERROR:", error);
+    return {
+      success: false,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Courses could not be loaded.",
+    };
+  } finally {
+    toast.dismiss(toastId);
   }
-  toast.dismiss(toastId);
-  return result;
 };
 
 export const deleteCourse = async (data, token) => {
@@ -191,23 +207,88 @@ export const deleteCourse = async (data, token) => {
       throw new Error("Course Could not delete");
     }
 
-    console.log("Course", result.data.message);
-    toast.success("Course Deleted");
+    toast.success(result.data.message || "Course deleted");
+    return true;
   } catch (error) {
-    console.log("DELETE COURSE API ERROR............", error);
-    toast.error(error.message);
+    console.error("DELETE COURSE API ERROR:", error);
+    toast.error(error.response?.data?.message || error.message || "Could not delete course");
+    return false;
+  } finally {
+    toast.dismiss(toastId);
   }
-  toast.dismiss(toastId);
+};
+
+export const cancelStudentEnrollment = async (data, token) => {
+  const toastId = toast.loading("Revoking learner access...");
+  try {
+    const response = await apiConnector({
+      method: "POST",
+      url: CANCELENROLLMENT_API,
+      body: data,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Could not revoke access");
+    }
+
+    toast.success(response.data.message || "Learner access revoked");
+    return true;
+  } catch (error) {
+    console.error("CANCEL ENROLLMENT API ERROR:", error);
+    toast.error(
+      error.response?.data?.message || error.message || "Could not revoke access",
+    );
+    return false;
+  } finally {
+    toast.dismiss(toastId);
+  }
+};
+
+export const restoreStudentEnrollment = async (data, token) => {
+  const toastId = toast.loading("Restoring learner access...");
+  try {
+    const response = await apiConnector({
+      method: "POST",
+      url: RESTOREENROLLMENT_API,
+      body: data,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Could not restore access");
+    }
+
+    toast.success(response.data.message || "Learner access restored");
+    return true;
+  } catch (error) {
+    console.error("RESTORE ENROLLMENT API ERROR:", error);
+    toast.error(
+      error.response?.data?.message ||
+        error.message ||
+        "Could not restore learner access",
+    );
+    return false;
+  } finally {
+    toast.dismiss(toastId);
+  }
 };
 
 export const getFullCourseDetailse = async (courseId, token, dispatch) => {
   let result = null;
-  const toastId = toast.loading("Loading...");
   try {
+    const id =
+      typeof courseId === "string" ? courseId : courseId?.courseId;
+    if (!id) throw new Error("Course ID is required");
+
     const response = await apiConnector({
       method: "POST",
       url: GETFULLCOURSEDETAILS_API,
-      body:courseId,
+      body: { courseId: id },
       
       headers: {
         Authorization: `Bearer ${token}`,
@@ -217,16 +298,92 @@ export const getFullCourseDetailse = async (courseId, token, dispatch) => {
     if (!response.data.success) {
       throw new Error(response.data.message);
     }
-    // console.log("CourseFull Deatils",response.data.data.courseDetails)
-    result = response?.data.data.courseDetails;
-    dispatch(setCourse(result));
-    dispatch(seteditCourse(true));
+    result = response.data.data.courseDetails;
+    if (dispatch) dispatch(setCourse(result));
   } catch (error) {
-    console.log("COURSE_FULL_DETAILS_API API ERROR............", error);
-    result = error.response.data;
+    console.error("COURSE FULL DETAILS API ERROR:", error);
+    toast.error(
+      error.response?.data?.message ||
+        error.message ||
+        "Could not load course details",
+    );
   }
-  toast.dismiss(toastId);
   return result;
+};
+
+export const getInstructorCourseForEdit = async (courseId, token) => {
+  try {
+    const response = await apiConnector({
+      method: "POST",
+      url: GETINSTRUCTORCOURSEFOREDIT_API,
+      body: { courseId },
+      headers: { Authorization: "Bearer " + token },
+    });
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Could not load course editor");
+    }
+    return response.data.data;
+  } catch (error) {
+    console.error("INSTRUCTOR COURSE EDIT API ERROR:", error);
+    toast.error(
+      error.response?.data?.message ||
+        error.message ||
+        "Could not load course for editing",
+    );
+    return null;
+  }
+};
+
+export const updateSectionMaterials = async (formData, token) => {
+  const toastId = toast.loading("Uploading section materials...");
+  try {
+    const response = await apiConnector({
+      method: "POST",
+      url: UPDATESECTIONMATERIALS_API,
+      body: formData,
+      headers: { Authorization: "Bearer " + token },
+    });
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Could not save materials");
+    }
+    toast.success("Section materials saved");
+    return response.data.data;
+  } catch (error) {
+    console.error("SECTION MATERIAL UPLOAD API ERROR:", error);
+    toast.error(
+      error.response?.data?.message ||
+        error.message ||
+        "Could not save section materials",
+    );
+    return null;
+  } finally {
+    toast.dismiss(toastId);
+  }
+};
+
+export const getCompletedSectionMaterials = async (courseId, token) => {
+  try {
+    const response = await apiConnector({
+      method: "POST",
+      url: COMPLETEDSECTIONMATERIALS_API,
+      body: { courseId },
+      headers: { Authorization: "Bearer " + token },
+    });
+    if (!response.data.success) {
+      throw new Error(
+        response.data.message || "Could not load section materials",
+      );
+    }
+    return response.data.data;
+  } catch (error) {
+    console.error("COMPLETED SECTION MATERIALS API ERROR:", error);
+    toast.error(
+      error.response?.data?.message ||
+        error.message ||
+        "Could not load section materials",
+    );
+    return null;
+  }
 };
 
 export const getFullEnrolledCourse = async(courseId,token)=>{
@@ -300,7 +457,10 @@ export const deleteSection = async (data, token) => {
     result = response.data.data;
     toast.success("Section deleted success");
   } catch (error) {
-    // console.log("ERROR call nhi huwa",error.message)
+    console.error("SECTION DELETE API ERROR:", error);
+    toast.error(
+      error.response?.data?.message || error.message || "Could not delete section",
+    );
   }
   toast.dismiss(toastId);
   return result;
@@ -319,7 +479,7 @@ export const deleteSubSection = async (data, token) => {
       },
     });
     if (!res.data.success) {
-      throw new Error("Error", error.data.message);
+      throw new Error(res.data.message || "Could not delete lecture");
     }
     result = res.data.data;
     toast.success("Subsection deleted");
@@ -343,7 +503,7 @@ export const updateSubSection = async (formData, token) => {
       },
     });
     if (!res.data.success) {
-      throw new Error("Error", error.data.message);
+      throw new Error(res.data.message || "Could not update lecture");
     }
     result = res.data.data;
     toast.success("SubSection update success");
@@ -402,7 +562,7 @@ export const courseProgress = async(data,token,dispatch)=>{
     if (!response.data.message) {
       throw new Error(response.data.error)
     }
-    dispatch(updateCompletedLectures(data.subsectionId))
+    dispatch(updateCompletedLectures(data.subSectionId))
     toast.success("Lecture Completed")
     result = true
   } catch (error) {

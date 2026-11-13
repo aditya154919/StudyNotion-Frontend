@@ -8,11 +8,11 @@ const CourseCard = ({cardData, curresntCard,setCurrestCard }) => {
     
   return (
     <div
-      className={`w-90 lg:w-[30%] ${
+      className={`w-full max-w-[22.5rem] lg:w-[30%] ${
         curresntCard === cardData?.heading
           ? "bg-white shadow-[12px_12px_0_0] shadow-[#FFD166]"
           : "bg-[#161D29]"
-      }  text-[#DBDDEA] h-75 mb-6 box-border cursor-pointer`}
+      }  mb-6 box-border min-h-60 cursor-pointer text-[#DBDDEA] sm:min-h-64`}
       onClick={() => setCurrestCard(cardData?.heading)}
     >
 

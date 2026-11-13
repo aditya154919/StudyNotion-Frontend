@@ -10,6 +10,7 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import rootReducer from "./Reducer";
 import { Toaster } from "react-hot-toast";
+import "allotment/dist/style.css";
 
 const store = configureStore({
   reducer: rootReducer,

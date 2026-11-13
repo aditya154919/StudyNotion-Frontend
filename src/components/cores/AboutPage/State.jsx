@@ -9,25 +9,25 @@ const Stats = [
 ];
 const State = () => {
   return (
-    <div className="bg-[#2C333F]">
+    <section className="bg-[#2C333F]">
       {/* Stats */}
-      <div className="flex flex-col gap-10 justify-between w-11/12 max-w-315 text-white mx-auto ">
-        <div className="grid grid-cols-2 md:grid-cols-4 text-center">
+      <div className="mx-auto w-11/12 max-w-315 py-3 text-white sm:py-5">
+        <div className="grid grid-cols-2 gap-y-2 text-center sm:grid-cols-4 sm:gap-y-0">
           {Stats.map((data, index) => {
             return (
-              <div className="flex flex-col py-5" key={index}>
-                <h1 className="text-[30px] font-bold text-gray-200">
+              <div className="flex min-w-0 flex-col py-3 sm:py-5" key={index}>
+                <p className="text-2xl font-bold text-gray-100 sm:text-[30px]">
                   {data.count}
-                </h1>
-                <h2 className="font-semibold text-[16px] text-[#585D69]">
+                </p>
+                <p className="text-xs font-semibold text-[#C5C7D4] sm:text-sm md:text-base">
                   {data.label}
-                </h2>
+                </p>
               </div>
             );
           })}
         </div>
       </div>
-    </div>
+    </section>
   )
 }
 

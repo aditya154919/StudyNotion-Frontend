@@ -34,7 +34,7 @@ const CourseBuilder = () => {
   }
 
   const goToNext = () => {
-    if (course.courseContent.length === 0) {
+    if (!course?.courseContent?.length) {
       toast.error("Please add atleast one section")
       return
     }
@@ -60,41 +60,49 @@ const CourseBuilder = () => {
 
   const onsubmit = async(data) => {
     setLoading(true);
-    let result;
-    if(editSectionName){
-        result = await updateSection({
-          sectionName:data.sectionName,
-          sectionId:editSectionName,
-          courseId:course._id
-        },token)
-    }
-    else{
-        const formData = {
+    try {
+      let result;
+      if(editSectionName){
+          result = await updateSection({
             sectionName:data.sectionName,
+            sectionId:editSectionName,
             courseId:course._id
-        }
-        result = await createSection(formData,token)
+          },token)
+      }
+      else{
+          const formData = {
+              sectionName:data.sectionName,
+              courseId:course._id
+          }
+          result = await createSection(formData,token)
+      }
+      if(result){
+          dispatch(setCourse(result));
+          setEditSectionName(null);
+          setValue("sectionName","")
+      }
+    } finally {
+      setLoading(false)
     }
-    if(result){
-        dispatch(setCourse(result));
-        setEditSectionName(null);
-        setValue("sectionName","")
-    }
-    setLoading(false)
   }
   return (
-    <div className='"space-y-8 rounded-md border border-[#2C333F] bg-[#161D29] p-6'>
-      <h1 className="text-xl text-white font-semibold">Course Sections</h1>
+    <div className="space-y-6 rounded-2xl border border-[#2C333F] bg-gradient-to-br from-[#161D29] to-[#111722] p-4 shadow-xl shadow-black/10 sm:p-6 lg:p-8">
+      <div>
+        <h1 className="text-xl font-semibold text-white">Course sections</h1>
+        <p className="mt-1 text-sm text-gray-400">
+          Organize your material into sections, then add lessons to each one.
+        </p>
+      </div>
       <form onSubmit={handleSubmit(onsubmit)}>
         <div className="flex flex-col space-y-2">
           <label>
-            <p className="text-white mt-5 text-md">
+            <p className="mt-2 text-sm font-medium text-gray-200">
               Section Name<sup className="text-red-400">*</sup>
             </p>
             <input
               id="sectionName"
-              placeholder="Enter Section Name"
-              className="w-full p-2 bg-gray-600 text-gray-300  rounded-md mt-0.5"
+              placeholder="e.g. Getting started"
+              className="mt-2 w-full rounded-xl border border-[#424854] bg-[#0b111b] px-4 py-3 text-gray-100 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
               {...register("sectionName", { required: true })}
             />
           </label>
@@ -104,12 +112,12 @@ const CourseBuilder = () => {
             </span>
           )}
         </div>
-        <div className="flex items-end gap-x-4 mt-2">
-         <button className="border flex flex-row items-center justify-center gap-2 border-yellow-300 p-2 rounded-md mt-2 text-yellow-400 cursor-pointer">
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+         <button disabled={loading} className="flex items-center justify-center gap-2 rounded-xl border border-amber-300/50 px-4 py-2.5 font-semibold text-amber-200 transition hover:bg-amber-300/10 disabled:opacity-60">
             {
-                editSectionName ? "Edit section Name":"Create Name"
+                loading ? "Saving..." : editSectionName ? "Save section" : "Add section"
             }
-            <IoAddCircleOutline className="text-yellow-400 mt-0.5 "/>
+            <IoAddCircleOutline className="text-amber-300"/>
          </button>
          {editSectionName && (
             <button
@@ -123,16 +131,17 @@ const CourseBuilder = () => {
         </div>
       </form>
       {
-        course.courseContent.length >0 &&(
+        course?.courseContent?.length >0 &&(
             <NestedView handleChangeEditSectionName={handleChangeEditSectionName}/>
         )
       }
 
       {/* nexr and privew */}
-      <div className="flex justify-end gap-x-3">
+      <div className="flex justify-between gap-3 border-t border-[#2C333F] pt-5">
         <button
+          type="button"
           onClick={goBack}
-          className={`flex cursor-pointer items-center gap-x-2 rounded-md bg-[#838894] py-2 px-4 font-semibold text-[#000814]`}
+          className="rounded-xl border border-[#424854] px-5 py-2.5 font-semibold text-gray-200 transition hover:bg-[#2C333F]"
         >
           Back
         </button>

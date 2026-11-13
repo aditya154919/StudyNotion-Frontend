@@ -1,39 +1,40 @@
-import React from 'react'
+import React, { useLayoutEffect } from 'react'
+import { useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router'
 import Section from './Section'
+import { resetAll } from '../../../slices/Courseslice'
 
 const AddCourse = () => {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
+  useLayoutEffect(() => {
+    dispatch(resetAll())
+  }, [dispatch])
+
   return (
-    <div className='flex items-start gap-x-2 w-full justify-between '>
-        <div className='felx flex-col gap-5 w-[55%]'>
-            <div className='p-5'>
-                <h1 className='text-gray-100 font-mono text-3xl'>Add course</h1>
-            </div>
-            <div className=''>
-                <Section/>
-            </div>
-        </div>
-        {/* INformation */}
-        <div className="sticky top-10 hidden max-w-100 flex-1 rounded-md border border-[#2C333F] bg-[#161D29] p-6 xl:block">
-          <p className="mb-8 text-lg text-[#F1F2FF]">⚡ Course Upload Tips</p>
-          <ul className="ml-5 list-item list-disc space-y-4 text-xs text-[#F1F2FF]">
-            <li>Set the Course Price option or make it free.</li>
-            <li>Standard size for the course thumbnail is 1024x576.</li>
-            <li>Video section controls the course overview video.</li>
-            <li>Course Builder is where you create & organize a course.</li>
-            <li>
-              Add Topics in the Course Builder section to create lessons,
-              quizzes, and assignments.
-            </li>
-            <li>
-              Information from the Additional Data section shows up on the
-              course single page.
-            </li>
-            <li>Make Announcements to notify any important</li>
-            <li>Notes to all enrolled students at once.</li>
-          </ul>
-        </div>
-            
-    </div>
+    <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <header className="mb-7">
+        <button
+          type="button"
+          onClick={() => navigate("/dashboard/my-courses")}
+          className="mb-5 inline-flex items-center gap-2 rounded-lg border border-[#424854] px-3 py-2 text-sm font-medium text-gray-300 transition hover:border-amber-400 hover:text-white"
+        >
+          <span aria-hidden="true">←</span> Back to my courses
+        </button>
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-300">
+          Instructor workspace
+        </p>
+        <h1 className="mt-2 text-3xl font-bold text-white sm:text-4xl">
+          Create course
+        </h1>
+        <p className="mt-2 text-sm text-gray-400">
+          Add course details, organize lessons, and choose when students can
+          enroll.
+        </p>
+      </header>
+      <Section />
+    </main>
   )
 }
 

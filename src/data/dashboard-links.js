@@ -49,24 +49,10 @@ export const sidebarLinks = [
     icon :"VscBroadcast"
   },
   {
-    id:8,
-    name:"Add Questions",
-    path:"/dashboard/addQuestions",
-    type: ACCOUNT_TYPE.INSTRUCTOR,
-    icon: "VscAdd"
-  },
-  {
-    id:9,
-    name:"StudyCode",
-    path:"/dashboard/code",
-    type: ACCOUNT_TYPE.STUDENT,
-    icon:"VscCodeOss"
-  },
-  {
     id:10,
     name:"Live class",
     path:"/dashboard/LiveRoom",
     type:ACCOUNT_TYPE.STUDENT,
     icon:"VscBroadcast"
-  }
+  },
 ];

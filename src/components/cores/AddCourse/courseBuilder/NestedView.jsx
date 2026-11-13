@@ -13,6 +13,7 @@ import { setCourse } from "../../../../slices/Courseslice"
 
 import ConfirmationModal from "../../../../Common/ConfirmationModal"
 import SubSectionModal from "./SubSection"
+import SectionMaterials from "./SectionMaterials"
 import { deleteSection, deleteSubSection } from "../../../../Services/operations/Courseapi"
 
 export default function NestedView({handleChangeEditSectionName}) {
@@ -150,6 +151,7 @@ export default function NestedView({handleChangeEditSectionName}) {
                 <FaPlus className="text-lg" />
                 <p>Add Lecture</p>
               </button>
+              <SectionMaterials section={section} />
             </div>
           </details>
         ))}

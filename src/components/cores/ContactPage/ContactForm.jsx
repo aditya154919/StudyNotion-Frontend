@@ -135,7 +135,7 @@ const ContactForm = () => {
               })}
             </select>
           </div>
-          <div className="flex w-[calc(100%-90px)] flex-col gap-2">
+          <div className="flex w-[calc(100%_-_90px)] flex-col gap-2">
             <input
               type="number"
               name="phonenumber"

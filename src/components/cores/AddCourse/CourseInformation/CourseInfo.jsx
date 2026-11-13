@@ -43,88 +43,88 @@ const CourseInfo = () => {
 
 
   useEffect(() => {
-    if (editCourse ) {
-    console.log("EDIT COURSE",course)
-    setValue("courseName", course.courseName);
-    setValue("courseDescription", course.courseDescription);
-    setValue("courseBenefits", course.whatYouWillLearn);
-    setValue("thumbnail",course.thumbnail)
-    setValue("coursePrice", course.price);
-    setValue("courseTag", course.tag.name);
+    if (editCourse && course) {
+      setValue("courseName", course.courseName || "");
+      setValue("courseDescription", course.courseDescription || "");
+      setValue("courseBenefits", course.whatYouWillLearn || "");
+      setValue("thumbnail", course.thumbnail || "");
+      setValue("coursePrice", Number(course.price) || 0);
+      setValue("courseTag", course.tag?._id || course.tag || "");
     }
   }, [editCourse, course, setValue]);
 
   const isFormUpdated = () => {
     const values = getValues();
+    const courseTagId = course.tag?._id || course.tag || "";
 
     return (
       values.courseName !== course.courseName ||
       values.courseDescription !== course.courseDescription ||
       values.courseBenefits !== course.whatYouWillLearn ||
-      values.coursePrice !== course.price ||
-      values.courseTag !== course.tag ||
-      values.courseImage
+      Number(values.coursePrice) !== Number(course.price) ||
+      values.courseTag !== courseTagId ||
+      (typeof File !== "undefined" && values.courseImage instanceof File)
     );
   };
 
  
   const onSubmit = async (data) => {
     setLoading(true);
+    try {
+      if (editCourse) {
+        if (!isFormUpdated()) {
+          dispatch(setStep(2));
+          return;
+        }
 
-    //  EDIT COURSE
-    if (editCourse) {
-      if (!isFormUpdated()) {
-        dispatch(setStep(2));
-        setLoading(false);
+        const formData = new FormData();
+        formData.append("courseId", course._id);
+
+        if (data.courseName !== course.courseName)
+          formData.append("courseName", data.courseName);
+
+        if (data.courseDescription !== course.courseDescription)
+          formData.append("courseDescription", data.courseDescription);
+
+        if (data.courseBenefits !== course.whatYouWillLearn)
+          formData.append("whatYouWillLearn", data.courseBenefits);
+
+        if (Number(data.coursePrice) !== Number(course.price))
+          formData.append("price", String(data.coursePrice));
+
+        if (data.courseTag !== (course.tag?._id || course.tag))
+          formData.append("tag", data.courseTag);
+
+        if (typeof File !== "undefined" && data.courseImage instanceof File)
+          formData.append("thumbnail", data.courseImage);
+
+        const updatedCourse = await editCourseDetails(formData, token);
+        if (updatedCourse) {
+          dispatch(setCourse(updatedCourse));
+          dispatch(setStep(2));
+        }
         return;
       }
 
       const formData = new FormData();
-      formData.append("courseId", course._id);
+      formData.append("courseName", data.courseName);
+      formData.append("courseDescription", data.courseDescription);
+      formData.append("price", String(data.coursePrice));
+      formData.append("tag", data.courseTag);
+      formData.append("thumbnail", data.courseImage);
+      formData.append("whatYouWillLearn", data.courseBenefits);
+      formData.append("status", COURSE_STATUS.DRAFT);
 
-      if (data.courseName !== course.courseName)
-        formData.append("courseName", data.courseName);
-
-      if (data.courseDescription !== course.courseDescription)
-        formData.append("courseDescription", data.courseDescription);
-
-      if (data.courseBenefits !== course.whatYouWillLearn)
-        formData.append("whatYouWillLearn", data.courseBenefits);
-
-      if (data.coursePrice !== course.price)
-        formData.append("price", data.coursePrice);
-
-      if (data.courseTag !== course.tag)
-        formData.append("tag", data.courseTag);
-
-      if (data.courseImage)
-        formData.append("thumbnail", data.courseImage);
-
-      const updatedCourse = await editCourseDetails(formData, token);
-      dispatch(setCourse(updatedCourse));
-      dispatch(setStep(2));
+      await createCourse(formData, token, dispatch);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // CREATE COURSE
-    const formData = new FormData();
-    formData.append("courseName", data.courseName);
-    formData.append("courseDescription", data.courseDescription);
-    formData.append("price", data.coursePrice);
-    formData.append("tag", data.courseTag);
-    formData.append("thumbnail", data.courseImage);
-    formData.append("whatYouWillLearn", data.courseBenefits);
-    formData.append("status", COURSE_STATUS.DRAFT);
-
-    await createCourse(formData, token, dispatch);
-    setLoading(false);
   };
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-8 rounded-md border border-[#2C333F] bg-[#161D29] p-6"
+      className="space-y-7 rounded-2xl border border-[#2C333F] bg-gradient-to-br from-[#161D29] to-[#111722] p-4 shadow-xl shadow-black/10 sm:p-6 lg:p-8"
     >
       {/* COURSE NAME */}
       <div>
@@ -133,7 +133,7 @@ const CourseInfo = () => {
         </label>
         <input
           {...register("courseName", { required: true })}
-          className="w-full p-2 bg-gray-600 text-gray-300 rounded-md"
+          className="mt-2 w-full rounded-xl border border-[#424854] bg-[#0b111b] px-4 py-3 text-gray-100 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
           placeholder="Enter Course Title"
         />
         {errors.courseName && (
@@ -148,7 +148,7 @@ const CourseInfo = () => {
         </label>
         <textarea
           {...register("courseDescription", { required: true })}
-          className="w-full p-2 bg-gray-600 text-gray-300 rounded-md min-h-32.5"
+          className="mt-2 min-h-36 w-full rounded-xl border border-[#424854] bg-[#0b111b] px-4 py-3 text-gray-100 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
         />
         {errors.courseDescription && (
           <span className="text-xs text-red-500">Required</span>
@@ -163,7 +163,7 @@ const CourseInfo = () => {
         <div className="relative">
           <input
             {...register("coursePrice", { required: true, valueAsNumber: true })}
-            className="w-full p-2 pl-10 bg-gray-600 text-gray-300 rounded-md"
+            className="w-full rounded-xl border border-[#424854] bg-[#0b111b] py-3 pl-10 pr-4 text-gray-100 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
           />
           <HiMiniCurrencyRupee className="absolute left-3 top-3 text-gray-400" />
         </div>
@@ -179,7 +179,7 @@ const CourseInfo = () => {
         </label>
         <select
           {...register("courseTag", { required: true })}
-          className="w-full p-2 bg-gray-600 text-gray-300 rounded-md"
+          className="mt-2 w-full rounded-xl border border-[#424854] bg-[#0b111b] px-4 py-3 text-gray-100 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
         >
           <option value="">Select Category</option>
           {tags.map((tag) => (
@@ -211,7 +211,7 @@ const CourseInfo = () => {
         </label>
         <textarea
           {...register("courseBenefits", { required: true })}
-          className="w-full p-2 bg-gray-600 text-gray-300 rounded-md min-h-32.5"
+          className="mt-2 min-h-36 w-full rounded-xl border border-[#424854] bg-[#0b111b] px-4 py-3 text-gray-100 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
         />
         {errors.courseBenefits && (
           <span className="text-xs text-red-500">Required</span>
@@ -219,12 +219,12 @@ const CourseInfo = () => {
       </div>
 
       {/* ACTIONS */}
-      <div className="flex justify-end gap-3">
+      <div className="flex flex-col-reverse justify-end gap-3 sm:flex-row">
         {editCourse && (
           <button
             type="button"
             onClick={() => dispatch(setStep(2))}
-            className="bg-gray-400 px-4 py-2 rounded-md "
+            className="rounded-xl border border-[#424854] px-4 py-3 font-semibold text-gray-200 transition hover:bg-[#2C333F]"
           >
             Continue Without Saving
           </button>
@@ -232,7 +232,7 @@ const CourseInfo = () => {
         <button
           type="submit"
           disabled={loading}
-          className="flex items-center gap-1 bg-yellow-400 px-4 py-2 rounded-md"
+          className="flex items-center justify-center gap-1 rounded-xl bg-amber-300 px-5 py-3 font-bold text-gray-950 transition hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {editCourse ? "Save" : "Next"} <MdNavigateNext />
         </button>

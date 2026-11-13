@@ -1,169 +1,165 @@
 import React, { useState } from "react";
-import { Table, Tbody, Td, Th, Thead, Tr } from "react-super-responsive-table";
-import { formatDate } from "../../../../utils/formateData";
-import { FaCheck, FaTrash } from "react-icons/fa";
-import { FiEdit2 } from "react-icons/fi";
-import { HiClock } from "react-icons/hi";
-import { COURSE_STATUS } from "../../../../utils/constant";
-import { useDispatch, useSelector } from "react-redux";
+import { BookOpen, Check, Clock3, Edit3, Trash2, Users } from "lucide-react";
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-
-import { deleteCourse, fetchInstructorCourses } from "../../../../Services/operations/Courseapi";
+import { formatDate } from "../../../../utils/formateData";
+import { COURSE_STATUS } from "../../../../utils/constant";
+import {
+  deleteCourse,
+  fetchInstructorCourses,
+} from "../../../../Services/operations/Courseapi";
 import ConfirmationModal from "../../../../Common/ConfirmationModal";
 
-
 const CourseTable = ({ courses, setCourses }) => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [loading,setLoading] = useState(false);
-  const {token} = useSelector((state)=>state.auth)
-  const [confirmationModal, setConfirmationModal] = useState(null)
-  const TRUNCATE_LENGTH = 30;
+  const { token } = useSelector((state) => state.auth);
+  const [loadingCourseId, setLoadingCourseId] = useState(null);
+  const [confirmationModal, setConfirmationModal] = useState(null);
 
-  
-  const handleDeleteCourse = async(courseId) => {
-    setLoading(true);
-    await deleteCourse({courseId:courseId},token)
-    //fetch remening courses after delete
-    const res = await fetchInstructorCourses(token);
-    if(res){
-      setCourses(res);
-    }
+  const handleDeleteCourse = async (courseId) => {
     setConfirmationModal(null);
-    setLoading(false)
+    setLoadingCourseId(courseId);
+    try {
+      const deleted = await deleteCourse({ courseId }, token);
+      if (deleted) {
+        const updatedCourses = await fetchInstructorCourses(token);
+        setCourses(updatedCourses || []);
+      }
+    } finally {
+      setConfirmationModal(null);
+      setLoadingCourseId(null);
+    }
   };
+
+  if (!courses?.length) {
+    return (
+      <div className="rounded-2xl border border-[#2C333F] bg-[#111827] px-5 py-12 text-center">
+        <p className="font-semibold text-white">No courses match your filters</p>
+        <p className="mt-1 text-sm text-[#999DAA]">
+          Try another search or choose a different course status.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>
-       <Table className="responsiveTable w-full rounded-xl border border-[#2C333F] bg-[#161D29]">
-      <Thead>
-        <Tr className="border-b border-[#2C333F]">
-          <Th className="px-6 py-3 text-left text-sm font-medium uppercase text-gray-200">
-            Courses
-          </Th>
-          <Th className="px-6 py-3 text-left text-sm font-medium uppercase text-gray-200 w-37.5">
-            Duration
-          </Th>
-          <Th className="px-6 py-3 text-left text-sm font-medium uppercase text-gray-200 w-30">
-            Price
-          </Th>
-          <Th className="px-6 py-3 text-left text-sm font-medium uppercase text-gray-200 w-35">
-            Action
-          </Th>
-        </Tr>
-      </Thead>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {courses.map((course) => {
+          const sectionCount = course.courseContent?.length || 0;
+          const lessonCount =
+            course.courseContent?.reduce(
+              (total, section) => total + (section.subSection?.length || 0),
+              0,
+            ) || 0;
+          const learnerCount = course.studentEnrolled?.length || 0;
+          const isPublished = course.status === COURSE_STATUS.PUBLISHED;
+          const isLoading = loadingCourseId === course._id;
 
-      <Tbody>
-        {courses?.length === 0 ? (
-          <Tr>
-            <Td
-              colSpan={4}
-              className="py-10 text-center text-2xl font-medium text-gray-200 before:content-none"
+          return (
+            <article
+              key={course._id}
+              className="group min-w-0 overflow-hidden rounded-2xl border border-[#2C333F] bg-[#161D29] transition duration-200 hover:-translate-y-0.5 hover:border-violet-400/40 hover:shadow-xl hover:shadow-black/20"
             >
-              No Course Found
-            </Td>
-          </Tr>
-        ) : (
-          courses.map((ele) => (
-            <Tr key={ele._id} className="border-b border-[#2C333F]">
-              {/* COURSES */}
-              <Td className="px-6 py-6 before:content-none">
-                <div className="flex gap-4">
-                  <img
-                    src={ele.thumbnail}
-                    alt={ele.courseName}
-                    className="h-22.5 w-40 rounded-lg object-cover"
-                  />
+              <div className="relative aspect-[16/6] overflow-hidden bg-[#0b111b]">
+                <img
+                  src={course.thumbnail}
+                  alt={course.courseName || "Course thumbnail"}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                />
+                <span
+                  className={`absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur ${
+                    isPublished
+                      ? "border-emerald-300/20 bg-emerald-950/75 text-emerald-200"
+                      : "border-amber-300/20 bg-amber-950/75 text-amber-200"
+                  }`}
+                >
+                  {isPublished ? <Check size={13} /> : <Clock3 size={13} />}
+                  {isPublished ? "Published" : "Draft"}
+                </span>
+              </div>
 
-                  <div className="flex flex-col justify-between">
-                    <p className="text-lg font-semibold text-gray-100">
-                      {ele.courseName}
-                    </p>
-
-                    {/* Course Description Truncation */}
-                    <p className="text-xs text-[#838894]">
-                      {ele.courseDescription?.split(" ").length > TRUNCATE_LENGTH
-                        ? ele.courseDescription.split(" ").slice(0, TRUNCATE_LENGTH).join(" ") + "..."
-                        : ele.courseDescription}
-                    </p>
-
-                    <p className="text-[12px] text-white">
-                      Created: {formatDate(ele.createdAt)}
-                    </p>
-
-                    {/* Status Badge */}
-                    {ele.status === COURSE_STATUS.DRAFT ? (
-                      <span className="mt-1 flex w-fit items-center gap-2 rounded-full bg-[#2C333F] px-2 py-0.5 text-[12px] font-medium text-[#F37290]">
-                        <HiClock size={14} />
-                        Drafted
-                      </span>
-                    ) : (
-                      <span className="mt-1 flex w-fit items-center gap-2 rounded-full bg-[#2C333F] px-2 py-0.5 text-[12px] font-medium text-[#E7C009]">
-                        <span className="flex h-3 w-3 items-center justify-center rounded-full bg-[#E7C009] text-[#2C333F]">
-                          <FaCheck size={8} />
-                        </span>
-                        Published
-                      </span>
-                    )}
-                  </div>
+              <div className="space-y-3 p-3 sm:p-4">
+                <div className="min-w-0">
+                  <h3 className="truncate text-base font-bold text-white sm:text-lg">
+                    {course.courseName || "Untitled course"}
+                  </h3>
+                  <p className="mt-1 line-clamp-2 min-h-9 text-xs leading-[1.125rem] text-[#999DAA] sm:text-sm">
+                    {course.courseDescription || "No course description yet."}
+                  </p>
                 </div>
-              </Td>
 
-              {/* DURATION (Hardcoded in original, needs dynamic value if available) */}
-              <Td className="px-6 py-6 text-sm font-medium text-gray-200 before:content-none">
-                2hr 30min
-              </Td>
+                <div className="flex flex-wrap gap-x-3 gap-y-1.5 border-y border-[#2C333F] py-2.5 text-[11px] text-[#C5C7D4] sm:text-xs">
+                  <span className="inline-flex items-center gap-1.5">
+                    <BookOpen size={15} className="text-violet-300" />
+                    {sectionCount} {sectionCount === 1 ? "section" : "sections"}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Clock3 size={15} className="text-sky-300" />
+                    {lessonCount} {lessonCount === 1 ? "lesson" : "lessons"}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <Users size={15} className="text-emerald-300" />
+                    {learnerCount} {learnerCount === 1 ? "learner" : "learners"}
+                  </span>
+                </div>
 
-              {/* PRICE */}
-              <Td className="px-6 py-6 text-sm font-medium text-gray-200 before:content-none">
-                ₹{ele.price}
-              </Td>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs text-[#838894]">
+                    Updated{" "}
+                    {course.updatedAt || course.createdAt
+                      ? formatDate(course.updatedAt || course.createdAt)
+                      : "recently"}
+                  </p>
+                  <p className="text-sm font-bold text-white">
+                    {Number(course.price) === 0
+                      ? "Free"
+                      : `₹${Number(course.price).toLocaleString("en-IN")}`}
+                  </p>
+                </div>
 
-              {/* ACTION */}
-              <Td className="px-6 py-6 before:content-none">
-                <div className="flex items-center gap-4">
-                  {/* Edit Button */}
+                <div className="grid grid-cols-2 gap-2">
                   <button
-                    disabled={loading}
-                    onClick={() => {
-                      navigate(`/dashboard/edit-course/${ele._id}`)
-                    }}
-                    title="Edit"
-                    className="px-2 transition-all text-gray-600 duration-200 hover:scale-110 hover:text-[#05A77B]"
+                    type="button"
+                    disabled={Boolean(loadingCourseId)}
+                    onClick={() =>
+                      navigate(`/dashboard/edit-course/${course._id}`)
+                    }
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-[#424854] px-2.5 py-2 text-xs font-semibold text-gray-200 transition hover:border-violet-300/60 hover:bg-violet-400/10 disabled:opacity-50 sm:gap-2 sm:text-sm"
                   >
-                    <FiEdit2 size={20} />
+                    <Edit3 size={16} />
+                    Edit course
                   </button>
-                  {/* Delete Button */}
                   <button
-                  disabled={loading}
-                  onClick={()=>{
-                    setConfirmationModal({
-                      text1: "Do you want to delete this course?",
+                    type="button"
+                    disabled={Boolean(loadingCourseId)}
+                    onClick={() =>
+                      setConfirmationModal({
+                        text1: "Delete this course?",
                         text2:
-                          "All the data related to this course will be deleted",
-                        btn1Text: !loading ? "Delete" : "Loading...  ",
-                        btn2Text: "Cancel",
-                        btn1Handler: !loading
-                          ? () => handleDeleteCourse(ele._id)
-                          : () => {},
-                        btn2Handler: !loading
-                          ? () => setConfirmationModal(null)
-                          : () => {},
-                    })
-                  }}
-                  title="Delete"
-                    className="px-1 transition-all text-gray-600 cursor-pointer duration-200 hover:scale-110 hover:text-[#ff0000]"
+                          `This permanently deletes the course, sections, and lessons. All ${learnerCount} enrolled learner(s) will immediately lose access, and the course will be removed from their dashboards. This cannot be undone.`,
+                        btn1Text: isLoading ? "Deleting..." : "Delete course",
+                        btn2Text: "Keep course",
+                        btn1Handler: () => handleDeleteCourse(course._id),
+                        btn2Handler: () => setConfirmationModal(null),
+                      })
+                    }
+                    title="Permanently delete course and remove learner access"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-rose-400/20 px-2.5 py-2 text-xs font-semibold text-rose-200 transition hover:border-rose-300/50 hover:bg-rose-400/10 disabled:cursor-not-allowed disabled:opacity-40 sm:gap-2 sm:text-sm"
                   >
-                    <FaTrash size={20}></FaTrash>
+                    <Trash2 size={16} />
+                    Delete
                   </button>
                 </div>
-              </Td>
-            </Tr>
-          ))
-        )}
-      </Tbody>
-    </Table>
-    {confirmationModal && <ConfirmationModal modelData={confirmationModal}/>}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+      {confirmationModal && (
+        <ConfirmationModal modelData={confirmationModal} />
+      )}
     </>
   );
 };

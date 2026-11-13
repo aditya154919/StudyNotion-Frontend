@@ -26,30 +26,28 @@ export const buyCourse = async(token,courses,userDetails,navigate,dispatch)=>{
     const toastId = toast.loading("Loading...");
     
     try {
-        //load script
-        // console.log("thik hu",token,"huh");
-        console.log("course",courses)
+        const courseIds = courses.map((course) =>
+            typeof course === "string" ? course : course?._id || course?.courseId,
+        );
+        if (!courseIds.length || courseIds.some((courseId) => !courseId)) {
+            throw new Error("Please select a valid course before checkout.");
+        }
+
         const res = await loadScript("https://checkout.razorpay.com/v1/checkout.js")
         if(!res){
-            // console.log("helkc")
-            toast.error("Razorpay SDK failed to load")
-            return;
+            throw new Error("Razorpay checkout could not be loaded. Please try again.");
         }
-        // //initiate the order
         const orderResponse = await apiConnector({
             method:"POST",
             url:CREATEORDER_API,
-            body:courses,
+            body:courseIds,
             headers:{
                 Authorization:`Bearer ${token}`
             }
         })
-        // console.log(" huhvjv")
         if(!orderResponse.data.success){
-            throw new Error(orderResponse.data.message);
-            // console.log(orderResponse.data.message);
+            throw new Error(orderResponse.data.message || "Could not create a payment order.");
         }
-        //    console.log(orderResponse.data)
 
          const option = {
             key:"rzp_test_Rmn6CDzCI0s7ZL",
@@ -64,24 +62,24 @@ export const buyCourse = async(token,courses,userDetails,navigate,dispatch)=>{
                 email:userDetails.email
             },
             handler: function(response){
-                console.log("go to send mail")
                 sendPaymentSuccessEmail(response,orderResponse.data.data.amount,token)
-                //verify 
-                console.log("go to verify")
-                 verifyPayment({...response,courses},token,navigate,dispatch)
+                 verifyPayment({...response,courses: courseIds},token,navigate,dispatch)
             }
             
         }
         const paymentObject = new window.Razorpay(option);
              paymentObject.open();
   
-        // console.log("option",option)
     } catch (error) {
-        // console.log("Error",error.response.data.message)
-         console.log("PAYMENT API ERROR.....", error.response.data.message);
-        toast.error(error.response.data.message)
+        console.error("PAYMENT API ERROR:", error);
+        toast.error(
+            error.response?.data?.message ||
+            error.message ||
+            "Could not start checkout. Please try again.",
+        );
+    } finally {
+        toast.dismiss(toastId);
     }
-    toast.dismiss(toastId)
 }
 
 async function sendPaymentSuccessEmail(response, amount, token) {
@@ -110,7 +108,6 @@ async function sendPaymentSuccessEmail(response, amount, token) {
 async function verifyPayment(bodyData, token, navigate, dispatch) {
     const toastId = toast.loading("Verifying Payment....");
     dispatch(setPaymentLoading(true));
-    // console.log("verify")
     try{
         const response  = await apiConnector({
           method:"POST",
@@ -123,16 +120,20 @@ async function verifyPayment(bodyData, token, navigate, dispatch) {
         })
 
         if(!response.data.success) {
-            throw new Error(response.data.message);
+            throw new Error(response.data.message || "Payment verification failed.");
         }
-        toast.success("payment Successfull");
+        toast.success("Payment successful. Your course is ready.");
         navigate("/dashboard/enrolled-courses");
-        // dispatch(resetCart());
     }   
     catch(error) {
         console.log("PAYMENT VERIFY ERROR....", error);
-        toast.error("Could not verify Payment");
+        toast.error(
+            error.response?.data?.message ||
+            error.message ||
+            "Payment was received, but verification could not be completed. Please contact support.",
+        );
+    } finally {
+        toast.dismiss(toastId);
+        dispatch(setPaymentLoading(false));
     }
-    toast.dismiss(toastId);
-    dispatch(setPaymentLoading(false));
 }

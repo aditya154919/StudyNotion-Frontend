@@ -39,7 +39,7 @@ import Analytic from "./components/cores/LiveStream/Analytic";
 const App = () => {
   const { user } = useSelector((state) => state.profile);
   return (
-    <div className="w-screen min-h-screen bg-[#000814] flex flex-col font-inter">
+    <div className="min-h-screen w-full bg-[#000814] flex flex-col font-inter">
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />} />
@@ -53,8 +53,7 @@ const App = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/forgot-password" element={<ForgotPass />} />
         <Route path="/verifyOtp/:email" element={<VerifyOtp />} />
-        <Route path="/change-pass/:email" element={<ChangePass />} />
-
+        <Route path="/change-pass" element={<ChangePass />} />
         <Route
           element={
             <ProtectedRoute>
@@ -65,7 +64,10 @@ const App = () => {
           <Route path="/dashboard/myprofile" element={<Myprofile />} />
           <Route path="/dashboard/instructor" element={<Instructor />} />
           <Route path="/dashboard/settings" element={<Setting />} />
-          <Route path="/live-room/:roomId/:streamId/:sectionId" element={<LiveRoom />} />
+          <Route
+            path="/live-room/:roomId/:streamId/:sectionId"
+            element={<LiveRoom />}
+          />
 
           {user?.accountType === ACCOUNT_TYPE.INSTRUCTOR && (
             <>
@@ -80,7 +82,7 @@ const App = () => {
                 path="/dashboard/live-dashboard/:streamId"
                 element={<LiveDashboard />}
               />
-              <Route path="/dashboard/live-Analytic" element={<Analytic/>}/>
+              <Route path="/dashboard/live-Analytic" element={<Analytic />} />
             </>
           )}
 
@@ -92,6 +94,7 @@ const App = () => {
               />
               <Route path="/dashboard/cart" element={<Cart />} />
               <Route path="/dashboard/LiveRoom" element={<LiveStudentRoom />} />
+              
             </>
           )}
         </Route>
